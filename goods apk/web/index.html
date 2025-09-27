@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>نموذج استلام بضاعة</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#b91c1c">
+  <link rel="manifest" href="manifest.webmanifest">
+</head>
+<body>
+  <h1>نموذج استلام بضاعة</h1>
+  <label>رمز المادة: <input id="itemCode"></label>
+  <button onclick="startScanner()">📷 مسح QR</button>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script>
+    function startScanner(){
+      const reader = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+      reader.render(result => {
+        document.getElementById("itemCode").value = result;
+        reader.clear();
+      });
+    }
+  </script>
+  <div id="reader" style="width:300px"></div>
+</body>
+</html>

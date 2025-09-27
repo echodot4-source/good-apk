@@ -1,0 +1,15 @@
+{
+  "name": "goods-receipt-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "android": "npx cap add android || true && npx cap copy android && npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "latest",
+    "@capacitor/core": "latest"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "latest"
+  }
+}

@@ -1,0 +1,194 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>نموذج استلام بضاعة</title>
+  <!-- مكتبة Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    body { font-family: "Tahoma", sans-serif; background: #fff5f5; margin: 0; padding: 0; }
+    header { background: #b91c1c; color: white; padding: 20px; text-align: center;
+             border-radius: 0 0 20px 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+    h1 { margin: 0; font-size: 24px; }
+    main { padding: 20px; max-width: 900px; margin: auto; }
+    form { background: #fff; padding: 20px; border-radius: 15px;
+           box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    label { display: block; margin: 10px 0 5px; color: #991b1b; font-weight: bold; }
+    input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 14px; }
+    .btn { display: inline-block; margin-top: 15px; padding: 10px 18px; border-radius: 8px; border: none;
+           font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .btn-red { background: #b91c1c; color: white; }
+    .btn-red:hover { background: #991b1b; }
+    .btn-outline { background: white; color: #b91c1c; border: 2px solid #b91c1c; }
+    .btn-outline:hover { background: #fee2e2; }
+    .records { background: #fff; padding: 20px; border-radius: 15px;
+               box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 10px; border: 1px solid #eee; text-align: center; font-size: 14px; }
+    th { background: #fecaca; color: #991b1b; }
+    tr:nth-child(even) { background: #fff7f7; }
+    .actions button { padding: 6px 10px; border-radius: 6px; font-size: 12px; margin: 2px; cursor: pointer; }
+    .edit { background: #fcd34d; border: none; }
+    .edit:hover { background: #fbbf24; }
+    .delete { background: #ef4444; border: none; color: white; }
+    .delete:hover { background: #dc2626; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📦 نموذج استلام بضاعة</h1>
+</header>
+
+<main>
+  <form id="receiptForm">
+    <label>رقم الفاتورة (مرة واحدة فقط)</label>
+    <input type="text" id="invoice" required>
+
+    <label>اسم المورد (مرة واحدة فقط)</label>
+    <input type="text" id="supplier" required>
+
+    <label>اسم المستخدم (مرة واحدة فقط)</label>
+    <input type="text" id="username">
+
+    <label>رمز المادة</label>
+    <input type="text" id="itemCode" required>
+
+    <label>الكمية</label>
+    <input type="number" id="quantity" required>
+
+    <label>رمز المجموعة</label>
+    <input type="text" id="groupCode">
+
+    <div>
+      <button type="submit" class="btn btn-red">➕ إضافة</button>
+      <button type="button" onclick="exportExcel()" class="btn btn-outline">⬇️ تصدير Excel</button>
+    </div>
+  </form>
+
+  <div class="records">
+    <h2 style="color:#b91c1c; margin:0 0 10px;">📑 السجلات</h2>
+    <table id="recordsTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>رقم الفاتورة</th>
+          <th>اسم المورد</th>
+          <th>رمز المادة</th>
+          <th>الكمية</th>
+          <th>رمز المجموعة</th>
+          <th>اسم المستخدم</th>
+          <th>إجراءات</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</main>
+
+<script>
+  let rows = JSON.parse(localStorage.getItem("goods_rows") || "[]");
+  let username = localStorage.getItem("goods_user") || "";
+  let invoice = localStorage.getItem("goods_invoice") || "";
+  let supplier = localStorage.getItem("goods_supplier") || "";
+
+  const form = document.getElementById("receiptForm");
+  const tbody = document.querySelector("#recordsTable tbody");
+
+  if (username) document.getElementById("username").value = username;
+  if (invoice) document.getElementById("invoice").value = invoice;
+  if (supplier) document.getElementById("supplier").value = supplier;
+
+  function renderTable() {
+    tbody.innerHTML = "";
+    rows.forEach((row, i) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${i+1}</td>
+        <td>${row.invoice}</td>
+        <td>${row.supplier}</td>
+        <td>${row.itemCode}</td>
+        <td>${row.quantity}</td>
+        <td>${row.groupCode}</td>
+        <td>${row.user}</td>
+        <td class="actions">
+          <button class="edit" onclick="editRow(${i})">✏️ تعديل</button>
+          <button class="delete" onclick="deleteRow(${i})">🗑 حذف</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+    localStorage.setItem("goods_rows", JSON.stringify(rows));
+  }
+
+  form.onsubmit = (e) => {
+    e.preventDefault();
+
+    const inv = invoice || document.getElementById("invoice").value;
+    const sup = supplier || document.getElementById("supplier").value;
+    const itemCode = document.getElementById("itemCode").value;
+    const quantity = document.getElementById("quantity").value;
+    const groupCode = document.getElementById("groupCode").value;
+    const user = username || document.getElementById("username").value;
+
+    if (!invoice && inv) { invoice = inv; localStorage.setItem("goods_invoice", inv); }
+    if (!supplier && sup) { supplier = sup; localStorage.setItem("goods_supplier", sup); }
+    if (!username && user) { username = user; localStorage.setItem("goods_user", user); }
+
+    rows.unshift({ invoice, supplier, itemCode, quantity, groupCode, user });
+    renderTable();
+
+    document.getElementById("itemCode").value = "";
+    document.getElementById("quantity").value = "";
+    document.getElementById("groupCode").value = "";
+  };
+
+  function editRow(i) {
+    const row = rows[i];
+    document.getElementById("itemCode").value = row.itemCode;
+    document.getElementById("quantity").value = row.quantity;
+    document.getElementById("groupCode").value = row.groupCode;
+    rows.splice(i,1);
+    renderTable();
+  }
+
+  function deleteRow(i) {
+    if (confirm("هل تريد حذف هذا السجل؟")) {
+      rows.splice(i,1);
+      renderTable();
+    }
+  }
+
+  function exportExcel() {
+    if (rows.length === 0) return alert("لا توجد بيانات للتصدير");
+
+    const data = [
+      ["رقم الفاتورة", "اسم المورد", "رمز المادة", "الكمية", "رمز المجموعة", "اسم المستخدم"]
+    ];
+    rows.forEach(r=>{
+      data.push([r.invoice, r.supplier, r.itemCode, r.quantity, r.groupCode, r.user]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "استلام");
+    XLSX.writeFile(wb, "استلام-بضاعة.xlsx");
+
+    rows = [];
+    invoice = supplier = username = "";
+    localStorage.clear();
+    form.reset();
+    renderTable();
+    alert("✅ تم التصدير إلى Excel وتم مسح النموذج والسجلات");
+  }
+
+  renderTable();
+</script>
+
+</body>
+</html>
+

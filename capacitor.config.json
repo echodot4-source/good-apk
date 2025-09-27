@@ -1,0 +1,9 @@
+{
+  "appId": "jo.ssa.goods",
+  "appName": "استلام بضاعة",
+  "webDir": "web",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}

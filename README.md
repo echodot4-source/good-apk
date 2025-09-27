@@ -1,6 +1,5 @@
 # Goods APK Builder
 
-رفع الملفات لتشغيل GitHub Actions وبناء APK تلقائياً.[build-android.yml](https://github.com/user-attachments/files/22577736/build-android.yml)
 name: Build Android APK
 
 on:
